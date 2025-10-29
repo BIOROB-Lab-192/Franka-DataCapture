@@ -8,8 +8,6 @@ class CSVWRiter:
         self.fields = fields
 
     def open_csv(self):
-        if self.filepath.exists():
-            raise FileExistsError( f"File already exists: {self.filepath}. ")
         self.file = open(self.filepath, mode='w', newline='')
         self.writer = csv.DictWriter(self.file, fieldnames=self.fieldnames)
         self.writer.writeheader()
