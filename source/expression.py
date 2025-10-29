@@ -10,7 +10,7 @@ class Expression:
 
     def read(self):
         return {
-            "timestampe": time.time(),
+            "timestamp": time.time(),
             "data": {"happy/not": random.randint(0, 1), "valence/arousal": random.random()},
             "source": self.name,
         }

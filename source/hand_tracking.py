@@ -11,7 +11,7 @@ class HandSensor:
     def read(self):
         data = [[random.random(), random.random(), random.random()] for _ in range(21)]
         return {
-            "timestampe": time.time(),
+            "timestamp": time.time(),
             "data": data,
             "source": self.name,
         }
