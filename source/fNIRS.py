@@ -1,0 +1,1 @@
+"""Functionlaity for capturing data using MNE python for NIRx devices"""

@@ -1,0 +1,1 @@
+"""Facial expression recognition functions. This will be using a trained pytorch model"""
