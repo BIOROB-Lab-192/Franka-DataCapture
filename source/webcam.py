@@ -16,9 +16,21 @@ class Camera:
 
     def read(self):  # dummy webcam read function creating a stream of numpy arrays
         frame = np.full((self.height, self.width, 3), (203, 192, 255), dtype=np.uint8) 
+
         return frame
 
     def save_frame(self, frame):
+        timestamp = time.time()
+        cv2.putText(
+            frame,
+            str(timestamp),
+            (10, 30),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+            cv2.LINE_AA
+            )
         self.writer.write(frame)
 
     def release(self):
