@@ -4,7 +4,7 @@ import random
 import time
 
 
-class Expression:
+class Robot:
     def __init__(self):
         self.name = "robot"
 
