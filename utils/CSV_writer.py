@@ -9,7 +9,7 @@ class CSVWRiter:
 
     def open_csv(self):
         self.file = open(self.filepath, mode='w', newline='')
-        self.writer = csv.DictWriter(self.file, fieldnames=self.fieldnames)
+        self.writer = csv.DictWriter(self.file, fieldnames=self.fields)
         self.writer.writeheader()
 
     def write_row(self, row):
