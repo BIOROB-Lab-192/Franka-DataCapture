@@ -237,9 +237,7 @@ class Robot:
         state = self.panda.get_state()
         return {
             "timestamp": time.time(),
-            "q": state.q.tolist(),
-            "dq": state.dq.tolist(),
-            "tau_J": state.tau_J.tolist(),
+            "data": state,
             "source": self.name
         }
     
