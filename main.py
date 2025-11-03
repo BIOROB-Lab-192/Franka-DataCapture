@@ -16,6 +16,8 @@ from utils.video_writer import VideoWriter
 from utils.data_coordinator import DataCoordinator
 from utils.CSV_writer import CSVWRiter
 
+from data_capture import AsyncDataCapture
+
 brain = fNIRS()
 emg = EMG()
 expression = Expression()
@@ -40,9 +42,11 @@ out_build.make_csv()
 
 csv_writer = CSVWRiter(fields=csv_fields, filepath=out_build.csv_path)
 
+capture = AsyncDataCapture(sensor_list, CSVWRiter)
 
+capture.start()
 
-
+capture.stop()
 
 def main():
     print("Hello from franka-datacapture!")
