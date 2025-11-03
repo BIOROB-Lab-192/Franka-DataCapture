@@ -1,3 +1,4 @@
+import asyncio
 from config_file import *
 import time
 import threading
@@ -29,7 +30,7 @@ franka  = Robot()
 franka.connect(hostname, username, password, gripper_toggle=False)
 franka.move_to_start()
 
-sensor_list = [expression, hand, emg, franka, fNIRS]
+sensor_list = [expression, hand, emg, franka, brain]
 
 sensor_names = [sensor_list.name for sensor in sensor_list]
 
@@ -44,13 +45,28 @@ csv_writer = CSVWRiter(fields=csv_fields, filepath=out_build.csv_path)
 
 capture = AsyncDataCapture(sensor_list, CSVWRiter)
 
-capture.start()
+async def send_markers(brain_sensor):
+    active_counter = 1
+    send_zero_next = False
 
-capture.stop()
+    while True:
+        await asyncio.to_thread(input, "Press Enter to send next marker: ")
 
-def main():
-    print("Hello from franka-datacapture!")
+        if send_zero_next:
+            marker = 0
+            send_zero_next = False
+        else:
+            marker = active_counter
+            active_counter += 1
+            send_zero_next = True
+
+        brain_sensor.send_marker(marker)
+
+async def main():
+    task_capture = asyncio.create_task(capture.start())
+    task_markers = asyncio.create_task(send_markers())
+    await asyncio.gather(task_capture, task_markers)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
