@@ -1,9 +1,5 @@
 import asyncio
 from config_file import *
-import time
-import threading
-import numpy as np
-from datetime import datetime
 
 from source.EMG import EMG
 from source.expression import Expression
@@ -14,7 +10,6 @@ from source.robot import Robot
 
 from utils.output_meta import OutputBuilder
 from utils.video_writer import VideoWriter
-from utils.data_coordinator import DataCoordinator
 from utils.CSV_writer import CSVWRiter
 
 from data_capture import AsyncDataCapture
@@ -66,7 +61,6 @@ async def main():
     task_capture = asyncio.create_task(capture.start())
     task_markers = asyncio.create_task(send_markers())
     await asyncio.gather(task_capture, task_markers)
-
 
 if __name__ == "__main__":
     asyncio.run(main())

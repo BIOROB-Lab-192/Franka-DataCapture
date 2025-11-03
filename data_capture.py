@@ -1,6 +1,5 @@
 """Functions integrating all the sensors into one script, writing a csv file with time stamps."""
 
-import time
 import asyncio
 from collections import defaultdict
 
