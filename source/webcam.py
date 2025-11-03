@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 
 class Camera:
-    def __init__(self, outpath, width=1920, height=1080, fps=30):
+    def __init__(self, outpath, width=1920, height=1080, fps=60):
         self.output_path = outpath
         self.width = width
         self.height = height

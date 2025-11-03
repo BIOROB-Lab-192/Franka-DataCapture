@@ -9,7 +9,6 @@ from source.webcam import Camera
 from source.robot import Robot
 
 from utils.output_meta import OutputBuilder
-from utils.video_writer import VideoWriter
 from utils.CSV_writer import CSVWRiter
 
 from data_capture import AsyncDataCapture
