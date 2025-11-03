@@ -1,31 +1,4 @@
 """Functions for the control of the robot and its data capture process"""
-
-
-# class Robot:
-#     def __init__(self):
-#         self.name = "robot"
-
-#     def connect(self, hostname, username, password, gripper_toggle):
-#         self.desk = panda_py.Desk(hostname, username, password) #Host, User, Pass to be read from a separate file
-#         self.desk.activate_fci()
-#         self.panda = panda_py.Panda(hostname)
-#         if gripper_toggle == True:
-#             self.gripper = libfranka.Gripper(hostname)
-#         # self.log = panda.get_log() Maybe don't want logging
-
-
-#     def start_teaching(self):
-#         pass
-
-#     def stop_teaching(self):
-#         pass
-
-#     def read(self):
-#         return{
-#             "timestamp": time.time(),
-#             "data": {k: v[-1] for k, v in self.log.items()},  # or from get state thing
-#             "source": self.name
-#         }
 """
 Robot control class for Franka Emika Panda using panda-py.
 Encapsulates connection, teaching, trajectory logging, and replay.
@@ -242,4 +215,8 @@ class Robot:
         }
     
 if __name__ == "__main__":
-    print("hello robot")
+    # Test the Robot class with mock data
+    robot = Robot(mock=True)
+    print("Robot initialized with mock data")
+    data = robot.read()
+    print(f"Sample data: {data}")
