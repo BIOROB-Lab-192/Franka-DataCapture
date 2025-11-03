@@ -54,6 +54,13 @@ class Robot:
             self.gripper = libfranka.Gripper(hostname)
         # self.log = panda.get_log() Maybe don't want logging
 
+    # TEACHING MODE
+    def start_teaching(self):
+        self.panda.teaching_mode(True)
+
+    def stop_teaching(self):
+        self.panda.teaching_mode(False)
+
     # GET STARTING POS
     def start_pos(self, filename):
         with open(filename, "rb") as f:
