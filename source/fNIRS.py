@@ -9,16 +9,16 @@ class fNIRS:
         self.name = "fnirs"
         self.info = StreamInfo(name='Trigger', type='Markers', channel_count=1, channel_format='int32', source_id='Example') # sets variables for object info
         self.outlet = StreamOutlet(self.info) # initialize stream.
-        self.epoch_marker
+        self.current_marker = None
 
-    def send_singal(self, marker):
+    def send_signal(self, marker):
         self.outlet.push_sample(x=marker)
-        self.epoch_marker = marker
+        self.current_marker = marker
 
     def read(self):
         epoch_marker = self.current_marker if self.current_marker is not None else 0
         return {
             "timestamp": time.time(),
-            "data": epoch_marker,
+            "data": {"epoch": epoch_marker},
             "source": self.name,
         }

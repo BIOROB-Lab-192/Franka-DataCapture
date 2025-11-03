@@ -24,9 +24,10 @@ franka  = Robot()
 franka.connect(hostname, username, password, gripper_toggle=False)
 franka.move_to_start()
 
-sensor_list = [expression, hand, emg, franka, brain]
+franka.start_teaching()
 
-sensor_names = [sensor_list.name for sensor in sensor_list]
+sensor_list = [franka, brain]
+sensor_names = [s.name for s in sensor_list]
 
 csv_fields = ["timestamp", "date_time"] + sensor_names
 
@@ -36,8 +37,9 @@ out_build.make_directory()
 out_build.make_csv()
 
 csv_writer = CSVWRiter(fields=csv_fields, filepath=out_build.csv_path)
+csv_writer.open_csv()
 
-capture = AsyncDataCapture(sensor_list, CSVWRiter)
+capture = AsyncDataCapture(sensor_list, csv_writer)
 
 async def send_markers(brain_sensor):
     active_counter = 1
@@ -54,12 +56,16 @@ async def send_markers(brain_sensor):
             active_counter += 1
             send_zero_next = True
 
-        brain_sensor.send_marker(marker)
+        brain_sensor.send_marker([marker])
 
 async def main():
     task_capture = asyncio.create_task(capture.start())
-    task_markers = asyncio.create_task(send_markers())
+    task_markers = asyncio.create_task(send_markers(brain))
     await asyncio.gather(task_capture, task_markers)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    finally:
+        franka.stop_teaching()
+        capture.stop()
