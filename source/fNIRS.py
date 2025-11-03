@@ -13,9 +13,9 @@ class fNIRS:
     def send_singal(self, marker):
         self.outlet.push_sample(x=marker)
 
-    def read(self):
+    def read(self, epoch_marker):
         return {
             "timestamp": time.time(),
-            "data": "stuff",
+            "data": epoch_marker,
             "source": self.name,
         }
