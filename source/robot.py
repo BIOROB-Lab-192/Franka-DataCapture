@@ -38,7 +38,6 @@ import logging
 import numpy as np
 import sys
 from panda_py import Panda, controllers, libfranka
-import panda_py
 
 logging.basicConfig(level=logging.INFO)
 
@@ -201,7 +200,7 @@ class Robot:
 
         logging.info("Replaying trajectory...")
         with self.panda.create_context(frequency=1000, max_runtime=record_time) as ctx:
-            while ctx.ok():
+            while ctx.ok()
                 ctrl.set_control(q[i], dq[i])
                 i += 1
         
@@ -233,11 +232,13 @@ class Robot:
             self._convert_to_csv(log, pickle_name, csv_name)
             logging.info(f"✅ Trial {i+1} complete. Data saved.")
 
-    def read(self):
+    def get_state(self):
         state = self.panda.get_state()
         return {
             "timestamp": time.time(),
-            "data": state,
+            "q": state.q.tolist(),
+            "dq": state.dq.tolist(),
+            "tau_J": state.tau_J.tolist(),
             "source": self.name
         }
     
