@@ -15,10 +15,10 @@ from utils.CSV_writer import CSVWRiter
 from data_capture import AsyncDataCapture
 
 brain = fNIRS()
-emg = EMG()
-expression = Expression()
-hand = HandSensor()
-cam = Camera()
+# emg = EMG()
+# expression = Expression()
+# hand = HandSensor()
+# cam = Camera()
 
 #  connect to robot
 franka  = Robot()
