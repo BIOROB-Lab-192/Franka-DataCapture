@@ -1,5 +1,6 @@
 import asyncio
 from config_file import *
+import signal
 
 from source.EMG import EMG
 from source.expression import Expression
@@ -64,16 +65,39 @@ async def send_markers(brain_sensor):
             active_counter += 1
             send_zero_next = True
 
-        brain_sensor.send_marker(marker)
+        brain_sensor.send_markers(marker)
+
 
 async def main():
+    loop = asyncio.get_running_loop()
+    stop_event = asyncio.Event()
+
+    # Handle SIGINT (Ctrl+C)
+    def shutdown():
+        print("\n[!] Ctrl+C detected, shutting down gracefully...")
+        stop_event.set()
+
+    loop.add_signal_handler(signal.SIGINT, shutdown)
+
     task_capture = asyncio.create_task(capture.start())
     task_markers = asyncio.create_task(send_markers(brain))
-    await asyncio.gather(task_capture, task_markers)
+
+    # Wait for shutdown event
+    await stop_event.wait()
+
+    # Graceful stop
+    capture.stop()
+    task_capture.cancel()
+    task_markers.cancel()
+
+    await asyncio.gather(task_capture, task_markers, return_exceptions=True)
 
 try:
+    print("Start")
     asyncio.run(main())
+except KeyboardInterrupt:
+    pass
 finally:
     franka.stop_teaching()
-    capture.stop()
     csv_writer.close()
+    print("Shutdown")

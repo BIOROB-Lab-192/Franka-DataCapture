@@ -27,7 +27,7 @@ class AsyncDataCapture:
             await asyncio.sleep(0)
 
     async def _writer_loop(self):
-        """Writes merged data rows using the provided CSV writer."""
+        """Writes merged data rows CSV writer."""
         while self.running:
             reading = await self.queue.get()
             src = reading["source"]
@@ -56,5 +56,6 @@ class AsyncDataCapture:
                     row[s.name] = val
 
             self.csv_writer.write_row(row)
+
     def stop(self):
         self.running = False
