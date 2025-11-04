@@ -64,7 +64,7 @@ async def send_markers(brain_sensor):
             active_counter += 1
             send_zero_next = True
 
-        brain_sensor.send_marker([marker])
+        brain_sensor.send_marker(marker)
 
 async def main():
     task_capture = asyncio.create_task(capture.start())

@@ -11,8 +11,8 @@ class fNIRS:
         self.outlet = StreamOutlet(self.info) # initialize stream.
         self.current_marker = None
 
-    def send_signal(self, marker):
-        self.outlet.push_sample(x=marker)
+    def send_markers(self, marker):
+        self.outlet.push_sample(x=[marker])
         self.current_marker = marker
 
     def read(self):
