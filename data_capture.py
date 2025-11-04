@@ -21,9 +21,23 @@ class AsyncDataCapture:
 
     async def _sensor_loop(self, sensor):
         """Read from sensor continuosly."""
+        failure_count = 0
         while self.running:
-            reading = sensor.read()
-            await self.queue.put(reading)
+            try:
+                # Run potentially blocking sensor.read() in a thread
+                reading = await asyncio.to_thread(sensor.read)
+                await self.queue.put(reading)
+                failure_count = 0
+            except Exception as e:
+                failure_count += 1
+                # Warn to console so unplug / failures are visible immediately
+                print(f"[!] Sensor error ({sensor.name}):\n{e}")
+                # Enqueue an error reading so the writer loop can react if desired
+                await self.queue.put({
+                    "timestamp": time.time(),
+                    "data": {"error": str(e)},
+                    "source": sensor.name,
+                })
             await asyncio.sleep(0)
 
     async def _writer_loop(self):

@@ -45,7 +45,7 @@ out_build = OutputBuilder(output_dir, save_dir, identity)
 out_build.make_directory()
 out_build.make_csv()
 
-csv_writer = CSVWRiter(fields=csv_fields, filepath=out_build.csv_path)
+csv_writer = CSVWRiter(filepath=out_build.csv_path, fields=csv_fields)
 csv_writer.open_csv()
 
 capture = AsyncDataCapture(sensor_list, csv_writer, 0.010)
