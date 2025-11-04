@@ -2,14 +2,16 @@
 
 import asyncio
 from collections import defaultdict
+import time
 
 class AsyncDataCapture:
-    def __init__(self, sensors, csv_writer):
+    def __init__(self, sensors, csv_writer, batch_time):
         self.sensors = sensors
         self.csv_writer = csv_writer
         self.queue = asyncio.Queue()
         self.last_values = defaultdict(dict)
         self.running = True
+        self.batch_time = batch_time
 
     async def start(self):
         # Start async tasks
@@ -31,6 +33,14 @@ class AsyncDataCapture:
             src = reading["source"]
             ts = reading["timestamp"]
             self.last_values[src] = reading["data"]
+
+            start_time = time.time()
+            while time.time() - start_time < self.batch_duration:
+                try:
+                    next_reading = await asyncio.wait_for(self.queue.get(), timeout=self.batch_duration)
+                    self.last_values[next_reading["source"]] = next_reading["data"]
+                except asyncio.TimeoutError:
+                    break
 
             row = {"timestamp": ts}
             for s in self.sensors:
