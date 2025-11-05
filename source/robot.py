@@ -1,43 +1,18 @@
 """Functions for the control of the robot and its data capture process"""
-
-
-# class Robot:
-#     def __init__(self):
-#         self.name = "robot"
-
-#     def connect(self, hostname, username, password, gripper_toggle):
-#         self.desk = panda_py.Desk(hostname, username, password) #Host, User, Pass to be read from a separate file
-#         self.desk.activate_fci()
-#         self.panda = panda_py.Panda(hostname)
-#         if gripper_toggle == True:
-#             self.gripper = libfranka.Gripper(hostname)
-#         # self.log = panda.get_log() Maybe don't want logging
-
-
-#     def start_teaching(self):
-#         pass
-
-#     def stop_teaching(self):
-#         pass
-
-#     def read(self):
-#         return{
-#             "timestamp": time.time(),
-#             "data": {k: v[-1] for k, v in self.log.items()},  # or from get state thing
-#             "source": self.name
-#         }
 """
 Robot control class for Franka Emika Panda using panda-py.
 Encapsulates connection, teaching, trajectory logging, and replay.
 """
 
 import time
+import ast
 import pickle
 import csv
 import logging
 import numpy as np
 import sys
 from panda_py import Panda, controllers, libfranka
+import panda_py
 
 logging.basicConfig(level=logging.INFO)
 
@@ -200,7 +175,7 @@ class Robot:
 
         logging.info("Replaying trajectory...")
         with self.panda.create_context(frequency=1000, max_runtime=record_time) as ctx:
-            while ctx.ok()
+            while ctx.ok():
                 ctrl.set_control(q[i], dq[i])
                 i += 1
         
@@ -232,15 +207,17 @@ class Robot:
             self._convert_to_csv(log, pickle_name, csv_name)
             logging.info(f"✅ Trial {i+1} complete. Data saved.")
 
-    def get_state(self):
+    def read(self):
         state = self.panda.get_state()
         return {
             "timestamp": time.time(),
-            "q": state.q.tolist(),
-            "dq": state.dq.tolist(),
-            "tau_J": state.tau_J.tolist(),
+            "data": ast.literal_eval(str(state)),
             "source": self.name
         }
     
 if __name__ == "__main__":
-    print("hello robot")
+    # Test the Robot class with mock data
+    robot = Robot(mock=True)
+    print("Robot initialized with mock data")
+    data = robot.read()
+    print(f"Sample data: {data}")
