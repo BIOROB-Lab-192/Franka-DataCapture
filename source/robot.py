@@ -12,13 +12,14 @@ import numpy as np
 import sys
 from panda_py import Panda, controllers, libfranka
 import panda_py
+import ast
 
 logging.basicConfig(level=logging.INFO)
 
 
 class Robot:
     def __init__(self):
-        self.name = "Robot"
+        self.name = "robot"
 
     def connect(self, hostname, username, password, gripper_toggle):
         self.desk = panda_py.Desk(hostname, username, password) #Host, User, Pass to be read from a separate file
@@ -210,7 +211,7 @@ class Robot:
         state = self.panda.get_state()
         return {
             "timestamp": time.time(),
-            "data": state,
+            "data": ast.literal_eval(str(state)),
             "source": self.name
         }
     
