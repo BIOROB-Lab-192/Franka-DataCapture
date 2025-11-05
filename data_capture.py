@@ -43,7 +43,12 @@ class AsyncDataCapture:
     async def _writer_loop(self):
         """Writes merged data rows CSV writer."""
         while self.running:
-            reading = await self.queue.get()
+            # periodically wake up to re-check self.running
+            try:
+                reading = await asyncio.wait_for(self.queue.get(), timeout=3)
+            except asyncio.TimeoutError:
+                # timeout lets us re-evaluate self.running and loop again
+                continue
             src = reading["source"]
             ts = reading["timestamp"]
             self.last_values[src] = reading["data"]
