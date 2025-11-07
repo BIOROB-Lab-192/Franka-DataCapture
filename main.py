@@ -50,18 +50,30 @@ csv_writer.open_csv()
 
 capture = AsyncDataCapture(sensor_list, csv_writer, 0.010)
 
-async def send_markers(brain_sensor):
+async def send_markers(brain_sensor, stop_event):
     active_counter = 1
     send_zero_next = False
 
     while True:
-        await asyncio.to_thread(input, "Press Enter to send next marker: ")
+        user_input = await asyncio.to_thread(input, "Press Enter to send next marker, type 'end' to stop sending markers or type 'quit' to end the program: \n")
+
+        if user_input.strip().lower() == "quit":
+            print("Quiting...")
+            stop_event.set()
+            break
+        elif user_input.strip().lower() == "end":
+            marker = 0
+            brain_sensor.send_markers(marker) 
+            break    
+        elif user_input.strip().lower() != '':
+            print("invalid input.")
+            continue
 
         if send_zero_next:
             marker = 0
             send_zero_next = False
         else:
-            marker = active_counter
+            marker = active_counter 
             active_counter += 1
             send_zero_next = True
 
@@ -80,7 +92,7 @@ async def main():
     loop.add_signal_handler(signal.SIGINT, shutdown)
 
     task_capture = asyncio.create_task(capture.start())
-    task_markers = asyncio.create_task(send_markers(brain))
+    task_markers = asyncio.create_task(send_markers(brain, stop_event))
 
     # Wait for shutdown event
     await stop_event.wait()
