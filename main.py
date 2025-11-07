@@ -17,7 +17,7 @@ from data_capture import AsyncDataCapture
 brain = fNIRS()
 # emg = EMG()
 # expression = Expression()
-# hand = HandSensor()
+hand = HandSensor()
 # cam = Camera()
 
 #  connect to robot
@@ -104,12 +104,15 @@ async def main():
 
     await asyncio.gather(task_capture, task_markers, return_exceptions=True)
 
-try:
-    print("Start")
-    asyncio.run(main())
-except KeyboardInterrupt:
-    pass
-finally:
-    franka.stop_teaching()
-    csv_writer.close()
-    print("Shutdown")
+if __name__ == "__main__":
+
+    try:
+        print("Start")
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
+    finally:
+        franka.stop_teaching()
+        csv_writer.close()
+        hand.stop()
+        print("Shutdown")
