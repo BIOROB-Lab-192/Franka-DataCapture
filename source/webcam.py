@@ -51,10 +51,14 @@ class Camera:
         self.writer.release()
         cv2.destroyAllWindows()
 
+
 if __name__ == "__main__":
-    cam = Camera("test.avi")
-    for i in range(300):
+    frames = 0
+    start = time.time()
+    while time.time() - start < 10:
         frame = cam.read()
         cam.save_frame(frame)
-        time.sleep(1 / cam.fps)
-    cam.release()
+        frames += 1
+
+    actual_fps = frames / (time.time() - start)
+    print("Actual FPS:", actual_fps)
