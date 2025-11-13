@@ -1,9 +1,9 @@
 """Hand tracking functions using the intel realsense camera."""
-
 from realsense_mediapipe_tracking.camera import realsenseCamera
 from realsense_mediapipe_tracking.hand_tracking import handTrack
 import time
 import multiprocessing as mp
+from pprint import pprint
 
 class HandSensor:
     def __init__(self):
@@ -26,7 +26,8 @@ class HandSensor:
 
             landmark_dict = {}
             for i, v in enumerate(landmarks_xyz):
-                landmark_dict[f"mark_{i}"] = v
+                for j, xyz in enumerate(v):
+                    landmark_dict[f"mark_{j}"] = xyz
 
             if not self.queue.empty():
                 try:
@@ -41,10 +42,24 @@ class HandSensor:
             self.process.join()
         
     def read(self):
-        if not self.queue.empty():
+        try:
             data = self.queue.get_nowait()
+        except:
+            data = None
         return {
             "timestamp": time.time(),
             "data": data,
             "source": self.name,
         }
+    
+if __name__ == "__main__":
+    hand_sensor = HandSensor()
+    try:
+        while True:
+            data = hand_sensor.read()
+            pprint(data, indent=2)
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        hand_sensor.stop()
+    finally:
+        hand_sensor.stop()
