@@ -44,10 +44,12 @@ class HandSensor:
     def read(self):
         try:
             data = self.queue.get_nowait()
+            if data == {}:
+                for i in range(21):
+                    data[f"mark_{i}"] = (float('nan'), float('nan'), float('nan'))
         except:
             for i in range(21):
                 data[f"mark_{i}"] = (float('nan'), float('nan'), float('nan'))
-            data = None
         return {
             "timestamp": time.time(),
             "data": data,
