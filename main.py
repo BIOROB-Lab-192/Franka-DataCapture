@@ -16,12 +16,12 @@ from data_capture import AsyncDataCapture
 
 brain = fNIRS()
 # emg = EMG()
-# expression = Expression()
+expression = Expression(model_path)
 hand = HandSensor()
 # cam = Camera()
 
 #  connect to robot
-franka  = Robot()
+franka = Robot()
 franka.connect(hostname, username, password, gripper_toggle=False)
 franka.move_to_start()
 
