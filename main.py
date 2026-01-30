@@ -67,6 +67,12 @@ async def send_markers(brain_sensor):
 
         brain_sensor.send_markers(marker)
 
+frame_queue = asyncio.Queue(maxsize=1)
+async def process_frames(camera):
+    while capture.running:
+        frame = await asyncio.to_thread(camera.get_and_write)
+        if frame is not None:
+            frame_queue.put_nowait(frame)
 
 async def main():
     loop = asyncio.get_running_loop()
