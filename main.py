@@ -18,12 +18,9 @@ frame_queue = asyncio.Queue(maxsize=1)
 
 brain = fNIRS()
 # emg = EMG()
-# expression = Expression()
-# hand = HandSensor()
 cam = Camera(f"{output_dir}/{save_dir}/{person}/{vid_out}", 0)
 expression = Expression(model_path, frame_queue)
 hand = HandSensor()
-# cam = Camera()
 
 #  connect to robot
 franka = Robot()
@@ -32,7 +29,7 @@ franka.move_to_start()
 
 franka.start_teaching()
 
-sensor_list = [franka, brain]
+sensor_list = [franka, brain, expression, hand]
 sensor_names = [s.name for s in sensor_list]
 
 csv_fields = ["timestamp"]
