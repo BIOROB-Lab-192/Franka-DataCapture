@@ -14,12 +14,14 @@ from utils.CSV_writer import CSVWRiter
 
 from data_capture import AsyncDataCapture
 
+frame_queue = asyncio.Queue(maxsize=1)
+
 brain = fNIRS()
 # emg = EMG()
 # expression = Expression()
 # hand = HandSensor()
 cam = Camera(f"{output_dir}/{save_dir}/{person}/{vid_out}", 0)
-expression = Expression(model_path)
+expression = Expression(model_path, frame_queue)
 hand = HandSensor()
 # cam = Camera()
 
@@ -82,7 +84,6 @@ async def send_markers(brain_sensor, stop_event):
 
         brain_sensor.send_markers(marker)
 
-frame_queue = asyncio.Queue(maxsize=1)
 async def process_frames(camera):
     while capture.running:
         frame = await asyncio.to_thread(camera.get_and_write)

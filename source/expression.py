@@ -7,12 +7,11 @@ import time
 import asyncio
 import cv2
 
-frame_q = asyncio.Queue(maxsize=1)
-
 class Expression:
-    def __init__(self, model_path, device='cpu'):
+    def __init__(self, model_path, frame_queue, device='cpu'):
         self.name = "expression"
         self.device = device
+        self.frame_queue = frame_queue
         self.program = load(model_path)
         self.model = self.program.module().to(self.device)
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
@@ -22,7 +21,7 @@ class Expression:
         ])
 
     async def read_image(self):
-        image = await frame_q.get()
+        image = await self.frame_queue.get()
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         faces = self.face_cascade.detectMultiScale(
                 gray,

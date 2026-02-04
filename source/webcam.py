@@ -50,8 +50,8 @@ class Camera:
     def get_and_write(self):
         frame = self.get_image()
         if frame is not None:
-            frame = self._overlay_timestamp(frame)
-            self.writer.write(frame)
+            frame_overally = self._overlay_timestamp(frame)
+            self.writer.write(frame_overally)
         return frame
 
     def read(self):
