@@ -9,4 +9,8 @@ output_dir = "output"
 save_dir = "test"
 identity = "person"
 
+model_path = "path"
 
+model_path = "path"
+
+vid_out = "output2"
