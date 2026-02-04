@@ -1,7 +1,6 @@
 """Webcam recording functions"""
 
 import time
-import numpy as np
 from vidgear.gears import CamGear, WriteGear
 import cv2
 import datetime
@@ -51,7 +50,7 @@ class Camera:
     def get_and_write(self):
         frame = self.get_image()
         if frame is not None:
-            self._overlay_timestamp(frame)
+            frame = self._overlay_timestamp(frame)
             self.writer.write(frame)
         return frame
 

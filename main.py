@@ -18,7 +18,7 @@ brain = fNIRS()
 # emg = EMG()
 # expression = Expression()
 # hand = HandSensor()
-# cam = Camera()
+cam = Camera(f"{output_dir}/{save_dir}/{person}/{vid_out}", 0)
 
 #  connect to robot
 franka  = Robot()
@@ -87,6 +87,7 @@ async def main():
 
     task_capture = asyncio.create_task(capture.start())
     task_markers = asyncio.create_task(send_markers(brain))
+    task_frames = asyncio.create_task(process_frames(cam))
 
     # Wait for shutdown event
     await stop_event.wait()
@@ -95,8 +96,9 @@ async def main():
     capture.stop()
     task_capture.cancel()
     task_markers.cancel()
+    task_frames.cancel()
 
-    await asyncio.gather(task_capture, task_markers, return_exceptions=True)
+    await asyncio.gather(task_capture, task_markers, task_frames, return_exceptions=True)
 
 try:
     print("Start")
@@ -106,4 +108,5 @@ except KeyboardInterrupt:
 finally:
     franka.stop_teaching()
     csv_writer.close()
+    cam.release()
     print("Shutdown")

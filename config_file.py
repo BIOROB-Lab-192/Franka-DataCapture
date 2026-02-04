@@ -9,4 +9,4 @@ output_dir = "output"
 save_dir = "test"
 identity = "person"
 
-
+vid_out = "output2"
