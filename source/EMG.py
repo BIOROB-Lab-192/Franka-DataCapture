@@ -2,11 +2,22 @@
 
 import random
 import time
+import socket
 
 
 class EMG:
-    def __init__(self):
+    def __init__(self, ip):
         self.name = "emg"
+        self.ip = ip
+
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+        self.client.connect(ip, 5566)
+
+    def send(self, ping_string):
+        self.client.send(ping_string)
+
+    def close(self):
+        self.client.close()
 
     def read(self):
         return {
