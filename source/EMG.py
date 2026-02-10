@@ -6,12 +6,12 @@ import socket
 
 
 class EMG:
-    def __init__(self, ip):
+    def __init__(self, ip, port=5566):
         self.name = "emg"
         self.ip = ip
 
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-        self.client.connect(ip, 5566)
+        self.client.connect(ip, port)
 
     def send(self, ping_string):
         self.client.send(ping_string)

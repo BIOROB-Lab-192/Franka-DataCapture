@@ -17,7 +17,7 @@ from data_capture import AsyncDataCapture
 frame_queue = asyncio.Queue(maxsize=1)
 
 brain = fNIRS()
-# emg = EMG()
+emg = EMG(IP)
 cam = Camera(f"{output_dir}/{save_dir}/{person}/{vid_out}", 0)
 expression = Expression(model_path, frame_queue)
 hand = HandSensor()
@@ -52,7 +52,7 @@ csv_writer.open_csv()
 
 capture = AsyncDataCapture(sensor_list, csv_writer, 0.010)
 
-async def send_markers(brain_sensor, stop_event):
+async def send_markers(brain_sensor, stop_event, ):
     active_counter = 1
     send_zero_next = False
 
@@ -66,6 +66,7 @@ async def send_markers(brain_sensor, stop_event):
         elif user_input.strip().lower() == "end":
             marker = 0
             brain_sensor.send_markers(marker) 
+            emg.send(marker)
             break    
         elif user_input.strip().lower() != '':
             print("invalid input.")
@@ -125,4 +126,5 @@ if __name__ == "__main__":
         csv_writer.close()
         hand.stop()
         cam.release()
+        emg.close()
     print("Shutdown")
