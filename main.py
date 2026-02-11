@@ -23,11 +23,9 @@ expression = Expression(model_path, frame_queue)
 hand = HandSensor()
 
 #  connect to robot
-franka = Robot()
-franka.connect(hostname, username, password, gripper_toggle=False)
-franka.move_to_start()
+franka = Franka()
+franka.connect()
 
-franka.start_teaching()
 
 sensor_list = [franka, brain, expression, hand]
 sensor_names = [s.name for s in sensor_list]
@@ -121,7 +119,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         pass
     finally:
-        franka.stop_teaching()
+        franka.stop()
         csv_writer.close()
         hand.stop()
         cam.release()

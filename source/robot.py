@@ -2,43 +2,56 @@
 
 from pylibfranka import Robot, Torques
 import time
-import ast
+import multiprocessing
 
 class Franka:
     def __init__(self, IP):
         self.name = "Robot"
         self.IP = IP
-    
+        self.zero_torque = Torques([0.0] * 7)
+        self.zero_torque.motion_finished = False
+
     def connect(self):
-        self.rob = Robot(self.IP)
-        # self.free_float()
+        self.robot = Robot(self.IP)
+        self.torque_thresholds()
 
         self.active_control = robot.start_torque_control()
-        zero_torque = Torques([0.0] * 7)
-        zero_torque.motion_finished = False
-        self.active_control.writeOnce(zero_torque)
 
-    def free_float(self):
+        float_thread = multiprocessing.Process(target=self.floating, daemon=True)
+
+        float_thread.start()
+
+    def torque_thresholds(self):
         lower_torque_thresholds = [1e6] * 7
         upper_torque_thresholds = [1e6] * 7
         lower_force_thresholds = [1e6] * 6
         upper_force_thresholds = [1e6] * 6
 
-        self.rob.set_collision_behavior(
+        self.robot.set_collision_behavior(
             lower_torque_thresholds,
             upper_torque_thresholds,
             lower_force_thresholds,
             upper_force_thresholds,
         )
 
+    def floating(self):
+        while True:
+            self.active_control.readOnce()
+            robot_state, duration = self.active_control.writeOnce(self.zero_torque)
+
     def stop(self):
-        self.rob.stop()
+        self.robot.stop()
+
+    def extract_data(self, data):
+        out = data.EE_T_K
+        return out
 
     def read(self):
-        state = self.rob.read_once()
+        state = self.robot.read_once()
+        data = self.extract_data(state)
         return {
             "timestamp": time.time(),
-            "data": ast.literal_eval(str(state)),
+            "data": str(data),
             "source": self.name
         }    
 
