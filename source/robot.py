@@ -6,7 +6,7 @@ import multiprocessing
 
 class Franka:
     def __init__(self, IP):
-        self.name = "Robot"
+        self.name = "Franka"
         self.IP = IP
         self.zero_torque = Torques([0.0] * 7)
         self.zero_torque.motion_finished = False
@@ -15,7 +15,7 @@ class Franka:
         self.robot = Robot(self.IP)
         self.torque_thresholds()
 
-        self.active_control = robot.start_torque_control()
+        self.active_control = self.robot.start_torque_control()
 
         float_thread = multiprocessing.Process(target=self.floating, daemon=True)
 
@@ -36,8 +36,8 @@ class Franka:
 
     def floating(self):
         while True:
-            self.active_control.readOnce()
-            robot_state, duration = self.active_control.writeOnce(self.zero_torque)
+            robot_state, duration = self.active_control.readOnce()
+            self.active_control.writeOnce(self.zero_torque)
 
     def stop(self):
         self.robot.stop()
