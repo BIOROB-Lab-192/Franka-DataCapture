@@ -4,7 +4,7 @@ from pylibfranka import Robot, Torques
 import time
 import ast
 
-class Rob:
+class Franka:
     def __init__(self, IP):
         self.name = "Robot"
         self.IP = IP
@@ -45,7 +45,7 @@ class Rob:
 if __name__ == "__main__":
     # Test the Robot class with mock data
     
-    robot = Rob()
+    robot = Franka()
     robot.connect()
     for i in range(5):
         data = robot.read()
