@@ -1,16 +1,11 @@
 # ---- Desk Login Info ----
 hostname = "10.31.82.199"
-username = "dummy_username"
-password = "dummy_pw"
-gripper_toggle = False
 
 # ---- Path Directories ----
 output_dir = "output"
 save_dir = "test"
 identity = "person"
+vid_out = "test_vid.mp4"
 
-model_path = "path"
-
-model_path = "path"
-
-vid_out = "output2"
+# ---- ML model paths ----
+model_path = "happy-nothappy_export.pt2"
