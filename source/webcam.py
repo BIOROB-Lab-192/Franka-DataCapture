@@ -79,7 +79,7 @@ class Camera:
     def read(self):
         return {
             "timestamp": time.time(),
-            "data": {"frame_captured"},
+            "data": {"frame_captured": False},
             "source": self.name,
         }
 

@@ -113,6 +113,7 @@ async def main():
 
     # Graceful stop
     capture.stop()
+    await asyncio.sleep(0.5)
     task_capture.cancel()
     task_markers.cancel()
     task_frames.cancel()
