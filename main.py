@@ -7,7 +7,7 @@ from source.EMG import EMG
 from source.expression import Expression
 from source.fNIRS import fNIRS
 from source.hand_tracking import HandSensor
-from source.robot import Robot
+from source.robot import Franka
 from source.webcam import Camera
 from utils.CSV_writer import CSVWRiter
 from utils.output_meta import OutputBuilder
@@ -21,10 +21,10 @@ expression = Expression(model_path, frame_queue)
 hand = HandSensor()
 
 #  connect to robot
-franka = Franka()
+franka = Franka(IP=hostname)
 franka.connect()
 
-
+#
 sensor_list = [franka, brain, expression, hand]
 sensor_names = [s.name for s in sensor_list]
 
