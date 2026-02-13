@@ -1,9 +1,12 @@
 """Hand tracking functions using the intel realsense camera."""
+
+import multiprocessing as mp
+import time
+from pprint import pprint
+
 from realsense_mediapipe_tracking.camera import realsenseCamera
 from realsense_mediapipe_tracking.hand_tracking import handTrack
-import time
-import multiprocessing as mp
-from pprint import pprint
+
 
 class HandSensor:
     def __init__(self):
@@ -40,22 +43,24 @@ class HandSensor:
         if self.process.is_alive():
             self.process.terminate()
             self.process.join()
-        
+
     def read(self):
+        data = {}
         try:
-            data = self.queue.get_nowait()
+            data = self.queue.get()
             if data == {}:
                 for i in range(21):
-                    data[f"mark_{i}"] = (float('nan'), float('nan'), float('nan'))
+                    data[f"mark_{i}"] = (float("nan"), float("nan"), float("nan"))
         except:
             for i in range(21):
-                data[f"mark_{i}"] = (float('nan'), float('nan'), float('nan'))
+                data[f"mark_{i}"] = (float("nan"), float("nan"), float("nan"))
         return {
             "timestamp": time.time(),
             "data": data,
             "source": self.name,
         }
-    
+
+
 if __name__ == "__main__":
     hand_sensor = HandSensor()
     try:
