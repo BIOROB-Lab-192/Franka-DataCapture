@@ -16,14 +16,14 @@ frame_queue = asyncio.Queue(maxsize=1)
 
 brain = fNIRS()
 # emg = EMG()
-expression = Expression(model_path, frame_queue)
 hand = HandSensor()
 
 #  connect to robot
 franka = Franka(IP=hostname)
 franka.connect()
 
-#
+expression = Expression(model_path, frame_queue, event_loop=None)
+
 sensor_list = [franka, brain, expression, hand]
 sensor_names = [s.name for s in sensor_list]
 
@@ -46,8 +46,6 @@ cam = Camera(f"{output_dir}/{save_dir}/{vid_out}", 0)
 
 csv_writer = CSVWRiter(filepath=out_build.csv_path, fields=csv_fields)
 csv_writer.open_csv()
-
-capture = AsyncDataCapture(sensor_list, csv_writer, 0.010)
 
 
 async def send_markers(brain_sensor, stop_event):
@@ -88,13 +86,16 @@ async def process_frames(camera):
         frame = await asyncio.to_thread(camera.get_and_write)
         if frame is not None:
             if frame_queue.full():
-                _ = frame_queue.get_nowait()  # discard old frame
+                _ = frame_queue.get_nowait()
             await frame_queue.put(frame)
 
 
 async def main():
     loop = asyncio.get_running_loop()
+    expression.event_loop = loop
     stop_event = asyncio.Event()
+        
+    capture = AsyncDataCapture(sensor_list, csv_writer, 0.010)
 
     # Handle SIGINT (Ctrl+C)
     def shutdown():

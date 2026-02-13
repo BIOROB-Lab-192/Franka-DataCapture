@@ -10,10 +10,11 @@ from torchvision import transforms
 
 
 class Expression:
-    def __init__(self, model_path, frame_queue, device="cpu"):
+    def __init__(self, model_path, frame_queue, device="cpu", event_loop=None):
         self.name = "expression"
         self.device = device
         self.frame_queue = frame_queue
+        self.event_loop = event_loop
         self.program = load(model_path)
         self.model = self.program.module().to(self.device)
         self.face_cascade = cv2.CascadeClassifier(
@@ -27,11 +28,19 @@ class Expression:
         )
 
     def read_image(self):
+        # Safely retrieve from asyncio.Queue from this thread context using the event loop
+        if not self.event_loop:
+            return None
         while True:
-            image = self.frame_queue.get()
+            try:
+                image = asyncio.run_coroutine_threadsafe(self.frame_queue.get(), self.event_loop).result(timeout=0.01)
+            except asyncio.TimeoutError:
+                # No frame available yet
+                return None
             if not self.frame_queue.empty():
                 continue
             break
+        
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         faces = self.face_cascade.detectMultiScale(
             gray, scaleFactor=1.1, minNeighbors=5, minSize=(40, 40)
