@@ -1,18 +1,16 @@
 import asyncio
-from config_file import *
 import signal
 
+from config_file import *
+from data_capture import AsyncDataCapture
 from source.EMG import EMG
 from source.expression import Expression
 from source.fNIRS import fNIRS
 from source.hand_tracking import HandSensor
-from source.webcam import Camera
 from source.robot import Robot
-
-from utils.output_meta import OutputBuilder
+from source.webcam import Camera
 from utils.CSV_writer import CSVWRiter
-
-from data_capture import AsyncDataCapture
+from utils.output_meta import OutputBuilder
 
 frame_queue = asyncio.Queue(maxsize=1)
 
@@ -50,12 +48,16 @@ csv_writer.open_csv()
 
 capture = AsyncDataCapture(sensor_list, csv_writer, 0.010)
 
+
 async def send_markers(brain_sensor, stop_event):
     active_counter = 1
     send_zero_next = False
 
     while True:
-        user_input = await asyncio.to_thread(input, "Press Enter to send next marker, type 'end' to stop sending markers or type 'quit' to end the program: \n")
+        user_input = await asyncio.to_thread(
+            input,
+            "Press Enter to send next marker, type 'end' to stop sending markers or type 'quit' to end the program: \n",
+        )
 
         if user_input.strip().lower() == "quit":
             print("Quiting...")
@@ -63,9 +65,9 @@ async def send_markers(brain_sensor, stop_event):
             break
         elif user_input.strip().lower() == "end":
             marker = 0
-            brain_sensor.send_markers(marker) 
-            break    
-        elif user_input.strip().lower() != '':
+            brain_sensor.send_markers(marker)
+            break
+        elif user_input.strip().lower() != "":
             print("invalid input.")
             continue
 
@@ -73,17 +75,21 @@ async def send_markers(brain_sensor, stop_event):
             marker = 0
             send_zero_next = False
         else:
-            marker = active_counter 
+            marker = active_counter
             active_counter += 1
             send_zero_next = True
 
         brain_sensor.send_markers(marker)
 
+
 async def process_frames(camera):
     while capture.running:
         frame = await asyncio.to_thread(camera.get_and_write)
         if frame is not None:
-            frame_queue.put_nowait(frame)
+            if frame_queue.full():
+                _ = frame_queue.get_nowait()  # discard old frame
+            await frame_queue.put(frame)
+
 
 async def main():
     loop = asyncio.get_running_loop()
@@ -109,10 +115,12 @@ async def main():
     task_markers.cancel()
     task_frames.cancel()
 
-    await asyncio.gather(task_capture, task_markers, task_frames, return_exceptions=True)
+    await asyncio.gather(
+        task_capture, task_markers, task_frames, return_exceptions=True
+    )
+
 
 if __name__ == "__main__":
-
     try:
         print("Start")
         asyncio.run(main())

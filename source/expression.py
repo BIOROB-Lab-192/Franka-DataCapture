@@ -1,37 +1,48 @@
 """Facial expression recognition functions. Using a pre-trained pytorch model"""
 
+import asyncio
+import time
+
+import cv2
+import torch
 from torch.export import load
 from torchvision import transforms
-import torch.no_grad
-import time
-import asyncio
-import cv2
+
 
 class Expression:
-    def __init__(self, model_path, frame_queue, device='cpu'):
+    def __init__(self, model_path, frame_queue, device="cpu"):
         self.name = "expression"
         self.device = device
         self.frame_queue = frame_queue
         self.program = load(model_path)
         self.model = self.program.module().to(self.device)
-        self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-        self.preprocess = transforms.Compose([
-            # transforms.Resize((100, 100)),
-            transforms.ToTensor(),
-        ])
+        self.face_cascade = cv2.CascadeClassifier(
+            cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+        )
+        self.preprocess = transforms.Compose(
+            [
+                # transforms.Resize((100, 100)),
+                transforms.ToTensor(),
+            ]
+        )
 
-    async def read_image(self):
-        image = await self.frame_queue.get()
+    def read_image(self):
+        while True:
+            image = self.frame_queue.get()
+            if not self.frame_queue.empty():
+                continue
+            break
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         faces = self.face_cascade.detectMultiScale(
-                gray,
-                scaleFactor=1.1,
-                minNeighbors=5,
-                minSize=(40, 40)
-                )
+            gray, scaleFactor=1.1, minNeighbors=5, minSize=(40, 40)
+        )
+
+        if len(faces) == 0:
+            return None
+
         x, y, w, h = faces[0]
 
-        image = image[y:y+h, x:x+w]
+        image = image[y : y + h, x : x + w]
         image = cv2.resize(image, (100, 100))
         return image
 
@@ -50,13 +61,16 @@ class Expression:
         return pred, probs.squeeze().cpu()
 
     def read(self):
-        try:
-            image = await self.read_image()
-            prediction = self.predict(image)
-        except:
+        image = self.read_image()
+
+        if image is not None:
+            prediction, probs = self.predict(image)
+        else:
+            # No frame available or no face detected
             prediction = -1
+
         return {
             "timestamp": time.time(),
-            "data": {"happy/not": prediction},
+            "data": {"happy_index": prediction},
             "source": self.name,
         }
