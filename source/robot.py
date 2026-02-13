@@ -1,8 +1,10 @@
 """Functions for the control of the robot and its data capture process"""
 
-from pylibfranka import Robot, Torques
-import time
 import multiprocessing
+import time
+
+from pylibfranka import Robot, Torques
+
 
 class Franka:
     def __init__(self, IP):
@@ -15,7 +17,8 @@ class Franka:
         self.robot = Robot(self.IP)
         self.torque_thresholds()
 
-        self.active_control = self.robot.start_torque_control()
+        self.manager = multiprocessing.Manager()
+        self.data_dict = self.manager.dict()
 
         float_thread = multiprocessing.Process(target=self.floating, daemon=True)
 
@@ -35,33 +38,46 @@ class Franka:
         )
 
     def floating(self):
+        self.active_control = self.robot.start_torque_control()
+
         while True:
             robot_state, duration = self.active_control.readOnce()
             self.active_control.writeOnce(self.zero_torque)
+            data = self.extract_data(robot_state)
+            self.data_dict.update(data)
 
     def stop(self):
         self.robot.stop()
 
     def extract_data(self, data):
-        out = data.EE_T_K
+        eetk = list(data.EE_T_K)
+        ee = list(data.O_T_EE)
+        q = list(data.q)
+        dq = list(data.dq)
+        out = {"eetk": eetk, "ee": ee, "q": q, "dq": dq}
         return out
 
     def read(self):
-        state = self.robot.read_once()
-        data = self.extract_data(state)
-        return {
-            "timestamp": time.time(),
-            "data": str(data),
-            "source": self.name
-        }    
+        while True:
+            data = dict(self.data_dict)
+            if len(data) == 0:
+                continue
+            else:
+                return {
+                    "timestamp": time.time(),
+                    "data": str(data),
+                    "source": self.name,
+                }
+
 
 if __name__ == "__main__":
     # Test the Robot class with mock data
-    
-    robot = Franka()
+
+    robot = Franka(IP="10.31.82.199")
     robot.connect()
-    for i in range(5):
+    for i in range(60):
+        print("here")
         data = robot.read()
-        print(f"Sample data: {data}")
+        print(data)
         time.sleep(1)
     robot.stop()
