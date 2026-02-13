@@ -16,7 +16,6 @@ frame_queue = asyncio.Queue(maxsize=1)
 
 brain = fNIRS()
 # emg = EMG()
-cam = Camera(f"{output_dir}/{save_dir}/{person}/{vid_out}", 0)
 expression = Expression(model_path, frame_queue)
 hand = HandSensor()
 
@@ -42,6 +41,8 @@ for sensor in sensor_list:
 out_build = OutputBuilder(output_dir, save_dir, identity)
 out_build.make_directory()
 out_build.make_csv()
+
+cam = Camera(f"{output_dir}/{save_dir}/{vid_out}", 0)
 
 csv_writer = CSVWRiter(filepath=out_build.csv_path, fields=csv_fields)
 csv_writer.open_csv()
