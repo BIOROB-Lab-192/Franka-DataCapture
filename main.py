@@ -80,22 +80,28 @@ async def send_markers(brain_sensor, stop_event):
 
         brain_sensor.send_markers(marker)
 
-
-async def process_frames(camera):
+async def process_frames(camera, capture):
     while capture.running:
-        frame = await asyncio.to_thread(camera.get_and_write)
-        if frame is not None:
-            if frame_queue.full():
-                _ = frame_queue.get_nowait()
-            await frame_queue.put(frame)
+        try:
+            frame = await asyncio.to_thread(camera.get_and_write)
+            if frame is not None:
+                if frame_queue.full():
+                    try:
+                        frame_queue.get_nowait()
+                    except asyncio.QueueEmpty:
+                        pass
+                await frame_queue.put(frame)
+        except Exception as e:
+            print(f"[!] Frame processing error: {e}")
 
 
 async def main():
     loop = asyncio.get_running_loop()
     expression.event_loop = loop
+
     stop_event = asyncio.Event()
         
-    capture = AsyncDataCapture(sensor_list, csv_writer, 0.010)
+    capture = AsyncDataCapture(sensor_list, csv_writer, 0.5)
 
     # Handle SIGINT (Ctrl+C)
     def shutdown():
@@ -106,7 +112,7 @@ async def main():
 
     task_capture = asyncio.create_task(capture.start())
     task_markers = asyncio.create_task(send_markers(brain, stop_event))
-    task_frames = asyncio.create_task(process_frames(cam))
+    task_frames = asyncio.create_task(process_frames(cam), capture)
 
     # Wait for shutdown event
     await stop_event.wait()
