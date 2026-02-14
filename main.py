@@ -112,7 +112,7 @@ async def main():
 
     task_capture = asyncio.create_task(capture.start())
     task_markers = asyncio.create_task(send_markers(brain, stop_event))
-    task_frames = asyncio.create_task(process_frames(cam), capture)
+    task_frames = asyncio.create_task(process_frames(cam, capture))
 
     # Wait for shutdown event
     await stop_event.wait()

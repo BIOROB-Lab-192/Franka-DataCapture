@@ -37,9 +37,6 @@ class Expression:
             except asyncio.TimeoutError:
                 # No frame available yet
                 return None
-            if not self.frame_queue.empty():
-                continue
-            break
         
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         faces = self.face_cascade.detectMultiScale(
