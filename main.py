@@ -52,7 +52,7 @@ async def send_markers(brain_sensor, stop_event):
     active_counter = 1
     send_zero_next = False
 
-    while True:
+    while not stop_event.is_set():
         user_input = await asyncio.to_thread(
             input,
             "Press Enter to send next marker, type 'end' to stop sending markers or type 'quit' to end the program: \n",
@@ -78,7 +78,11 @@ async def send_markers(brain_sensor, stop_event):
             active_counter += 1
             send_zero_next = True
 
-        brain_sensor.send_markers(marker)
+        try:
+            brain_sensor.send_markers(marker)
+        except Exception as e:
+            print(f"Error sending marker {marker}: \n {e}")
+            break
 
 async def process_frames(camera, capture, stop_event):
     while not stop_event.is_set():
@@ -94,6 +98,7 @@ async def process_frames(camera, capture, stop_event):
         except Exception as e:
             print(f"[!] Frame processing error: {e}")
         await asyncio.sleep(0.5)
+    print("Frame proessing has stopped")
 
 
 async def main():
@@ -120,7 +125,7 @@ async def main():
 
     # Graceful stop
     capture.stop()
-    await asyncio.sleep(0.5)
+    await asyncio.sleep(1)
     task_capture.cancel()
     task_markers.cancel()
     task_frames.cancel()
