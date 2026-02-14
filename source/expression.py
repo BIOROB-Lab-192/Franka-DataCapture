@@ -28,15 +28,13 @@ class Expression:
         )
 
     def read_image(self):
-        # Safely retrieve from asyncio.Queue from this thread context using the event loop
-        if not self.event_loop:
-            return None
         while True:
             try:
-                image = asyncio.run_coroutine_threadsafe(self.frame_queue.get(), self.event_loop).result(timeout=0.01)
-            except asyncio.TimeoutError:
-                # No frame available yet
-                return None
+                image = self.frame_queue.get_nowait()
+                break
+            except asyncio.QueueEmpty:
+                # Return None if no new frame is available yet
+                continue   
         
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         faces = self.face_cascade.detectMultiScale(
