@@ -98,7 +98,7 @@ async def process_frames(camera, capture, stop_event):
         except Exception as e:
             print(f"[!] Frame processing error: {e}")
         await asyncio.sleep(0.5)
-    print("Frame proessing has stopped")
+    print("Frame processing has stopped")
 
 
 async def main():
@@ -112,7 +112,6 @@ async def main():
     def shutdown():
         print("\n[!] Ctrl+C detected, shutting down gracefully...")
         stop_event.set()
-        franka.stop()
 
     loop.add_signal_handler(signal.SIGINT, shutdown)
 
@@ -134,6 +133,11 @@ async def main():
         task_capture, task_markers, task_frames, return_exceptions=True
     )
 
+    franka.stop()
+    hand.stop()
+    cam.release()
+    csv_writer.close()
+
 
 if __name__ == "__main__":
     try:
@@ -142,8 +146,21 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         pass
     finally:
-        franka.stop()
-        csv_writer.close()
-        hand.stop()
-        cam.release()
+        try:
+            franka.stop()
+        except Exception:
+            pass
+        try:
+            csv_writer.close()
+        except Exception:
+            pass
+        try:
+            hand.stop()
+        except Exception:
+            pass
+        try:
+            cam.release()
+        except Exception:
+            pass
+
     print("Shutdown")

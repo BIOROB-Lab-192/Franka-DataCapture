@@ -8,7 +8,7 @@ class AsyncDataCapture:
     def __init__(self, sensors, csv_writer, batch_duration):
         self.sensors = sensors
         self.csv_writer = csv_writer
-        self.queue = asyncio.Queue()
+        self.queue = asyncio.Queue(maxsize=200)
         self.last_values = defaultdict(dict)
         self.running = True
         self.batch_time = batch_duration
@@ -20,13 +20,24 @@ class AsyncDataCapture:
         await asyncio.gather(*sensor_tasks, writer_task)
 
     async def _sensor_loop(self, sensor):
-        """Read from sensor continuosly."""
+        """Read from sensor continuously."""
         failure_count = 0
         while self.running:
             try:
                 # Run potentially blocking sensor.read() in a thread
                 reading = await asyncio.to_thread(sensor.read)
-                await self.queue.put(reading)
+                try:
+                    # Try to add normally
+                    self.queue.put_nowait(reading)
+                except asyncio.QueueFull:
+                    try:
+                        _ = self.queue.get_nowait()
+                    except asyncio.QueueEmpty:
+                        pass
+                    try:
+                        self.queue.put_nowait(reading)
+                    except asyncio.QueueFull:
+                        pass
                 failure_count = 0
             except Exception as e:
                 failure_count += 1

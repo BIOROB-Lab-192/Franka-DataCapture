@@ -62,6 +62,7 @@ class Expression:
         return pred, probs.squeeze().cpu()
 
     def read(self):
+        time.sleep(0.2)
         image = self.read_image()
 
         if image is not None:

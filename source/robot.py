@@ -23,9 +23,9 @@ class Franka:
         self.data_dict = self.manager.dict()
         self.stop_signal = self.manager.Event()
 
-        float_thread = multiprocessing.Process(target=self.floating)
+        self.float_thread = multiprocessing.Process(target=self.floating, daemon=True)
 
-        float_thread.start()
+        self.float_thread.start()
 
     def torque_thresholds(self):
         lower_torque_thresholds = [1e6] * 7
@@ -42,17 +42,40 @@ class Franka:
 
     def floating(self):
         self.active_control = self.robot.start_torque_control()
-
-        while not self.stop_signal.is_set():
-            robot_state, duration = self.active_control.readOnce()
-            self.active_control.writeOnce(self.zero_torque)
-            data = self.extract_data(robot_state)
-            self.data_dict.update(data)
+        try:
+            while not self.stop_signal.is_set():
+                robot_state, duration = self.active_control.readOnce()
+                self.active_control.writeOnce(self.zero_torque)
+                data = self.extract_data(robot_state)
+                self.data_dict.update(data)
+        finally:
+            try:
+                self.robot.stop()
+            except Exception:
+                pass
 
     def stop(self):
-        if self.stop_signal:
-            self.stop_signal.set()
-        self.robot.stop()
+        print("Stopping Franka...")
+
+        try:
+            if hasattr(self, "float_thread") and self.float_thread.is_alive():
+                self.float_thread.join(timeout=2)
+
+                if self.float_thread.is_alive():
+                    print("Force terminating Franka process...")
+                    self.float_thread.terminate()
+                    self.float_thread.join()
+
+        except Exception as e:
+            print(f"[!] Error stopping Franka process: {e}")
+
+        try:
+            if hasattr(self, "manager"):
+                self.manager.shutdown()
+        except Exception as e:
+            print(f"[!] Error shutting down Manager: {e}")
+
+        print("Franka stopped.")
 
     def extract_data(self, data):
         eetk = list(data.EE_T_K)
@@ -66,6 +89,7 @@ class Franka:
         while True:
             data = dict(self.data_dict)
             if len(data) == 0:
+                time.sleep(0.01)
                 continue
             else:
                 return {

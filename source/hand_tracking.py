@@ -12,6 +12,7 @@ class HandSensor:
     def __init__(self):
         self.name = "hand_landmarks"
         self.queue = mp.Queue(maxsize=1)
+        self.stop_event = mp.Event()
         self.process = mp.Process(target=self._capture_loop, daemon=True)
         self.process.start()
 
@@ -19,7 +20,7 @@ class HandSensor:
         cam = realsenseCamera()
         tracker = handTrack(cam)
 
-        while True:
+        while not self.stop_event.is_set():
             color_image, depth_image, depth_frame = tracker.cam.get_frames()
             if color_image is None or depth_image is None:
                 time.sleep(0.005)
@@ -38,8 +39,10 @@ class HandSensor:
                 except:
                     pass
             self.queue.put(landmark_dict)
+        cam.pipe.stop()
 
     def stop(self):
+
         if self.process.is_alive():
             self.process.terminate()
             self.process.join()
@@ -47,7 +50,7 @@ class HandSensor:
     def read(self):
         data = {}
         try:
-            data = self.queue.get()
+            data = self.queue.get_nowait()
             if data == {}:
                 for i in range(21):
                     data[f"mark_{i}"] = (float("nan"), float("nan"), float("nan"))
