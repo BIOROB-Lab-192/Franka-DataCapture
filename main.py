@@ -22,7 +22,7 @@ hand = HandSensor()
 franka = Franka(IP=hostname)
 franka.connect()
 
-expression = Expression(model_path, frame_queue, event_loop=None)
+expression = Expression(model_path, frame_queue)
 
 sensor_list = [franka, brain, expression, hand]
 sensor_names = [s.name for s in sensor_list]
@@ -97,7 +97,6 @@ async def process_frames(camera, capture):
 
 async def main():
     loop = asyncio.get_running_loop()
-    expression.event_loop = loop
 
     stop_event = asyncio.Event()
         

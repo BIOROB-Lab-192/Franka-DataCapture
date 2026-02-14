@@ -10,11 +10,10 @@ from torchvision import transforms
 
 
 class Expression:
-    def __init__(self, model_path, frame_queue, device="cpu", event_loop=None):
+    def __init__(self, model_path, frame_queue, device="cpu"):
         self.name = "expression"
         self.device = device
         self.frame_queue = frame_queue
-        self.event_loop = event_loop
         self.program = load(model_path)
         self.model = self.program.module().to(self.device)
         self.face_cascade = cv2.CascadeClassifier(
