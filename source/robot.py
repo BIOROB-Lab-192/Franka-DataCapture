@@ -2,6 +2,7 @@
 
 import multiprocessing
 import time
+import ast
 
 from pylibfranka import Robot, Torques
 
@@ -12,6 +13,7 @@ class Franka:
         self.IP = IP
         self.zero_torque = Torques([0.0] * 7)
         self.zero_torque.motion_finished = False
+        self.stop_signal = None
 
     def connect(self):
         self.robot = Robot(self.IP)
@@ -19,8 +21,9 @@ class Franka:
 
         self.manager = multiprocessing.Manager()
         self.data_dict = self.manager.dict()
+        self.stop_signal = self.manager.Event()
 
-        float_thread = multiprocessing.Process(target=self.floating, daemon=True)
+        float_thread = multiprocessing.Process(target=self.floating)
 
         float_thread.start()
 
@@ -40,13 +43,15 @@ class Franka:
     def floating(self):
         self.active_control = self.robot.start_torque_control()
 
-        while True:
+        while not self.stop_signal.is_set():
             robot_state, duration = self.active_control.readOnce()
             self.active_control.writeOnce(self.zero_torque)
             data = self.extract_data(robot_state)
             self.data_dict.update(data)
 
     def stop(self):
+        if self.stop_signal:
+            self.stop_signal.set()
         self.robot.stop()
 
     def extract_data(self, data):
@@ -65,7 +70,7 @@ class Franka:
             else:
                 return {
                     "timestamp": time.time(),
-                    "data": str(data),
+                    "data": ast.literal_eval(str(data)),
                     "source": self.name,
                 }
 

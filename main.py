@@ -80,7 +80,7 @@ async def send_markers(brain_sensor, stop_event):
 
         brain_sensor.send_markers(marker)
 
-async def process_frames(camera, capture):
+async def process_frames(camera, capture, stop_event):
     while not stop_event.is_set():
         try:
             frame = await asyncio.to_thread(camera.get_and_write)
@@ -93,7 +93,7 @@ async def process_frames(camera, capture):
                 await frame_queue.put(frame)
         except Exception as e:
             print(f"[!] Frame processing error: {e}")
-        await asyncio.sleep(0.05)
+        await asyncio.sleep(0.5)
 
 
 async def main():
@@ -107,12 +107,13 @@ async def main():
     def shutdown():
         print("\n[!] Ctrl+C detected, shutting down gracefully...")
         stop_event.set()
+        franka.stop()
 
     loop.add_signal_handler(signal.SIGINT, shutdown)
 
     task_capture = asyncio.create_task(capture.start())
     task_markers = asyncio.create_task(send_markers(brain, stop_event))
-    task_frames = asyncio.create_task(process_frames(cam, capture))
+    task_frames = asyncio.create_task(process_frames(cam, capture, stop_event))
 
     # Wait for shutdown event
     await stop_event.wait()
