@@ -81,7 +81,7 @@ async def send_markers(brain_sensor, stop_event):
         brain_sensor.send_markers(marker)
 
 async def process_frames(camera, capture):
-    while capture.running:
+    while not stop_event.is_set():
         try:
             frame = await asyncio.to_thread(camera.get_and_write)
             if frame is not None:
@@ -93,6 +93,7 @@ async def process_frames(camera, capture):
                 await frame_queue.put(frame)
         except Exception as e:
             print(f"[!] Frame processing error: {e}")
+        await asyncio.sleep(0.05)
 
 
 async def main():

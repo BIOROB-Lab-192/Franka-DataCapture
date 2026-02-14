@@ -27,13 +27,11 @@ class Expression:
         )
 
     def read_image(self):
-        while True:
-            try:
-                image = self.frame_queue.get_nowait()
-                break
-            except asyncio.QueueEmpty:
-                # Return None if no new frame is available yet
-                continue   
+        try:
+            image = self.frame_queue.get_nowait()
+        except asyncio.QueueEmpty:
+            # Return None if no new frame is available yet
+            return None   
         
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         faces = self.face_cascade.detectMultiScale(
