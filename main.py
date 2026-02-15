@@ -97,7 +97,6 @@ async def process_frames(camera, capture, stop_event):
                 await frame_queue.put(frame)
         except Exception as e:
             print(f"[!] Frame processing error: {e}")
-        await asyncio.sleep(0.5)
     print("Frame processing has stopped")
 
 
@@ -106,7 +105,7 @@ async def main():
 
     stop_event = asyncio.Event()
         
-    capture = AsyncDataCapture(sensor_list, csv_writer, 0.5)
+    capture = AsyncDataCapture(sensor_list, csv_writer, 0.01)
 
     # Handle SIGINT (Ctrl+C)
     def shutdown():
