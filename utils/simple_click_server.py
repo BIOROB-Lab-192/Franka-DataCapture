@@ -9,7 +9,7 @@ import socket
 import pyautogui
 
 
-def start_server(host='0.0.0.0', port=5555):
+def start_server(host, port):
     """
     Start a simple server that clicks when it receives any message.
     
@@ -30,13 +30,12 @@ def start_server(host='0.0.0.0', port=5555):
     print(f"[SERVER] Waiting for click commands...")
     
     try:
-        while True:
-            # Accept connection
-            client_socket, address = server_socket.accept()
-            print(f"[SERVER] Connection from {address}")
-            
-            try:
-                # Receive any data
+        # Accept connection
+        client_socket, address = server_socket.accept()
+        print(f"[SERVER] Connection from {address}")
+        try:
+            while True:
+            # Receive any data
                 data = client_socket.recv(1024)
                 
                 if data:
@@ -46,12 +45,8 @@ def start_server(host='0.0.0.0', port=5555):
                     
                     # Send confirmation
                     client_socket.send(b"CLICKED")
-                    
-            except Exception as e:
-                print(f"[SERVER] Error: {e}")
-            finally:
-                client_socket.close()
-                
+        except Exception as e:
+            print(f"[SERVER] Error: {e}")                
     except KeyboardInterrupt:
         print("\n[SERVER] Shutting down...")
     finally:
@@ -59,4 +54,4 @@ def start_server(host='0.0.0.0', port=5555):
 
 
 if __name__ == "__main__":
-    start_server()
+    start_server(host="0.0.0.0", port=5566)

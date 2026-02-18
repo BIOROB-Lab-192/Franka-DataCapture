@@ -17,7 +17,7 @@ from data_capture import AsyncDataCapture
 frame_queue = asyncio.Queue(maxsize=1)
 
 brain = fNIRS()
-emg = EMG(IP)
+emg = EMG(ip)
 cam = Camera(f"{output_dir}/{save_dir}/{person}/{vid_out}", 0)
 expression = Expression(model_path, frame_queue)
 hand = HandSensor()
