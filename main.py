@@ -15,9 +15,8 @@ from utils.output_meta import OutputBuilder
 frame_queue = asyncio.Queue(maxsize=1)
 
 brain = fNIRS()
-emg = EMG(ip)
-cam = Camera(f"{output_dir}/{save_dir}/{person}/{vid_out}", 0)
-expression = Expression(model_path, frame_queue)
+emg = EMG(c.emg_ip, c.emg_port)
+
 hand = HandSensor()
 
 #  connect to robot
@@ -50,7 +49,7 @@ csv_writer = CSVWRiter(filepath=out_build.csv_path, fields=csv_fields)
 csv_writer.open_csv()
 
 
-async def send_markers(brain_sensor, stop_event, ):
+async def send_markers(brain_sensor, stop_event, emg):
     active_counter = 1
     send_zero_next = False
 
@@ -75,9 +74,11 @@ async def send_markers(brain_sensor, stop_event, ):
             marker = active_counter
             active_counter += 1
             send_zero_next = True
-        print(f"Current marker: {marker}")
+            
 
         try:
+            print(f"Sending marker: {marker}")
+            emg.send(marker)
             brain_sensor.send_markers(marker)
         except Exception as e:
             print(f"Error sending marker {marker}: \n {e}")
@@ -115,7 +116,7 @@ async def main():
     loop.add_signal_handler(signal.SIGINT, shutdown)
 
     task_capture = asyncio.create_task(capture.start())
-    task_markers = asyncio.create_task(send_markers(brain, stop_event))
+    task_markers = asyncio.create_task(send_markers(brain, stop_event, emg))
     task_frames = asyncio.create_task(process_frames(cam, capture, stop_event))
 
     # Wait for shutdown event
@@ -147,20 +148,27 @@ if __name__ == "__main__":
     finally:
         try:
             franka.stop()
-        except Exception:
+        except Exception as e:
+            print(e)
             pass
         try:
             csv_writer.close()
-        except Exception:
+        except Exception as e:
+            print(e)
             pass
         try:
             hand.stop()
-        except Exception:
+        except Exception as e:
+            print(e)
             pass
         try:
             cam.release()
-        except Exception:
+        except Exception as e:
+            print(e)
             pass
-
-        emg.close()
+        try:
+            emg.close()
+        except Exception as e:
+            print(e)
+            pass
     print("Shutdown")

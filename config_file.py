@@ -1,5 +1,7 @@
-# ---- Desk Login Info ----
+# ---- Login Info ----
 hostname = "10.31.82.199"
+emg_ip = "0.0.0.0"
+emg_port = 5555
 
 # ---- Path Directories ----
 output_dir = "output"
