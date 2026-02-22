@@ -9,3 +9,6 @@ vid_out = "test_vid.mp4"
 
 # ---- ML model paths ----
 model_path = "happy-nothappy_export.pt2"
+
+# ---- Config Options ----
+tick_rate = 0.01  # seconds

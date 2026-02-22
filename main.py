@@ -1,7 +1,7 @@
 import asyncio
 import signal
 
-from config_file import *
+import config_file as c
 from data_capture import AsyncDataCapture
 from source.EMG import EMG
 from source.expression import Expression
@@ -19,10 +19,10 @@ brain = fNIRS()
 hand = HandSensor()
 
 #  connect to robot
-franka = Franka(IP=hostname)
+franka = Franka(IP=c.hostname)
 franka.connect()
 
-expression = Expression(model_path, frame_queue)
+expression = Expression(c.model_path, frame_queue)
 
 sensor_list = [franka, brain, expression, hand]
 sensor_names = [s.name for s in sensor_list]
@@ -38,11 +38,11 @@ for sensor in sensor_list:
 
 
 #  Build output directory
-out_build = OutputBuilder(output_dir, save_dir, identity)
+out_build = OutputBuilder(c.output_dir, c.save_dir, c.identity)
 out_build.make_directory()
 out_build.make_csv()
 
-cam = Camera(f"{output_dir}/{save_dir}/{vid_out}", 0)
+cam = Camera(f"{c.output_dir}/{c.save_dir}/{c.vid_out}", 0)
 
 csv_writer = CSVWRiter(filepath=out_build.csv_path, fields=csv_fields)
 csv_writer.open_csv()
@@ -55,19 +55,15 @@ async def send_markers(brain_sensor, stop_event):
     while not stop_event.is_set():
         user_input = await asyncio.to_thread(
             input,
-            "Press Enter to send next marker, type 'end' to stop sending markers or type 'quit' to end the program: \n",
+            "Press Enter to send next marker or type 'quit' to end the program: \n",
         )
 
         if user_input.strip().lower() == "quit":
             print("Quiting...")
             stop_event.set()
             break
-        elif user_input.strip().lower() == "end":
-            marker = 0
-            brain_sensor.send_markers(marker)
-            break
         elif user_input.strip().lower() != "":
-            print("invalid input.")
+            print("Invalid Input...")
             continue
 
         if send_zero_next:
@@ -77,12 +73,14 @@ async def send_markers(brain_sensor, stop_event):
             marker = active_counter
             active_counter += 1
             send_zero_next = True
+        print(f"Current marker: {marker}")
 
         try:
             brain_sensor.send_markers(marker)
         except Exception as e:
             print(f"Error sending marker {marker}: \n {e}")
             break
+
 
 async def process_frames(camera, capture, stop_event):
     while not stop_event.is_set():
@@ -104,8 +102,8 @@ async def main():
     loop = asyncio.get_running_loop()
 
     stop_event = asyncio.Event()
-        
-    capture = AsyncDataCapture(sensor_list, csv_writer, 0.01)
+
+    capture = AsyncDataCapture(sensor_list, csv_writer, c.tick_rate)
 
     # Handle SIGINT (Ctrl+C)
     def shutdown():
