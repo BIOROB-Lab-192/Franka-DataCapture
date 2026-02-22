@@ -15,7 +15,9 @@ from utils.output_meta import OutputBuilder
 frame_queue = asyncio.Queue(maxsize=1)
 
 brain = fNIRS()
-# emg = EMG()
+emg = EMG(ip)
+cam = Camera(f"{output_dir}/{save_dir}/{person}/{vid_out}", 0)
+expression = Expression(model_path, frame_queue)
 hand = HandSensor()
 
 #  connect to robot
@@ -48,7 +50,7 @@ csv_writer = CSVWRiter(filepath=out_build.csv_path, fields=csv_fields)
 csv_writer.open_csv()
 
 
-async def send_markers(brain_sensor, stop_event):
+async def send_markers(brain_sensor, stop_event, ):
     active_counter = 1
     send_zero_next = False
 
@@ -160,4 +162,5 @@ if __name__ == "__main__":
         except Exception:
             pass
 
+        emg.close()
     print("Shutdown")
