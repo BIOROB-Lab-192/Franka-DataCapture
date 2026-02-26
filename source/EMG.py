@@ -15,7 +15,7 @@ class EMG:
         self.client.connect((ip, port))
 
     def send(self, ping_string):
-        self.client.send(ping_string.encode("utf-8"))
+        self.client.send(ping_string)
 
     def close(self):
         self.client.close()
