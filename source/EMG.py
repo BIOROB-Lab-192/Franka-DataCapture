@@ -15,7 +15,7 @@ class EMG:
         self.client.connect((ip, port))
 
     def send(self, ping_string):
-        self.client.send(ping_string)
+        self.client.send(str(ping_string).encode('utf-8'))
 
     def close(self):
         self.client.close()
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     try:
         while True:
             print("ping")
-            emg_test.send("ping".encode())
+            emg_test.send("ping")
             time.sleep(3)
     except Exception as E:
         print(E)

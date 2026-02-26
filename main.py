@@ -1,5 +1,6 @@
 import asyncio
 import signal
+import time
 
 import config_file as c
 from data_capture import AsyncDataCapture
@@ -74,10 +75,11 @@ async def send_markers(brain_sensor, stop_event, emg):
             marker = active_counter
             active_counter += 1
             send_zero_next = True
-            
 
         try:
             print(f"Sending marker: {marker}")
+            if marker != 0:
+                time.sleep(5)
             emg.send(marker)
             brain_sensor.send_markers(marker)
         except Exception as e:
